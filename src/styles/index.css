@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* --- FONDO GLOBAL --- */
+html, body, #root {
+  background-color: #082129;
+  color: white;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+}
+
+/* --- SUAVIZA EL RENDER Y NORMALIZA --- */
+* {
+  box-sizing: border-box;
+}
+
+/* --- CORRIGE CENTRADO GLOBAL --- */
+/* Ya no centramos todo el contenido con flex, lo hace cada componente */
+body {
+  display: block;
+}
+
+/* --- INPUTS GLOBALES --- */
+input {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  width: 100%;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+input:focus {
+  border-color: #34d399; /* emerald-400 */
+  box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.3);
+}
