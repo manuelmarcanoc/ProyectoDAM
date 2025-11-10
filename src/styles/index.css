@@ -4,7 +4,7 @@
 
 /* --- FONDO GLOBAL --- */
 html, body, #root {
-  background-color: #082129;
+
   color: white;
   margin: 0;
   padding: 0;
@@ -17,8 +17,6 @@ html, body, #root {
   box-sizing: border-box;
 }
 
-/* --- CORRIGE CENTRADO GLOBAL --- */
-/* Ya no centramos todo el contenido con flex, lo hace cada componente */
 body {
   display: block;
 }

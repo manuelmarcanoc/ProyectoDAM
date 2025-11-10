@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import logo from "../../assets/logo.png";
 import { useNavigate } from "react-router-dom";
+import AuthBackground from "./AuthBackground";
+import logo from "../../assets/logo.png";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -10,50 +11,37 @@ export default function Login() {
 
   const handleLogin = (e) => {
     e.preventDefault();
+    console.log("🔐 Login con:", { email, password });
     navigate("/home");
   };
 
   return (
-    <motion.div
-      className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden"
-      style={{
-        background: "linear-gradient(135deg, #05161b 0%, #082129 60%, #0c2f36 100%)",
-        color: "white",
-      }}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-    >
-      {/* Fondo animado */}
-      <motion.div
-        className="absolute inset-0 z-0"
-        style={{
-          background:
-            "radial-gradient(circle at 30% 20%, rgba(57, 253, 139, 0.15), transparent 60%), radial-gradient(circle at 70% 80%, rgba(241, 196, 15, 0.1), transparent 70%)",
-        }}
-        animate={{
-          backgroundPosition: ["0% 0%", "100% 100%", "0% 0%"],
-        }}
-        transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-      />
+    <div className="relative flex flex-col items-center justify-center min-h-screen overflow-hidden">
+      {/* 🌌 Fondo animado */}
+      <AuthBackground />
 
-      {/* LOGO */}
-      <motion.img
-        src={logo}
-        alt="Vibbe Logo"
-        className="w-28 h-28 mb-6 z-10 drop-shadow-2xl"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-      />
+      {/* 💡 Luces decorativas suaves */}
+      <div className="absolute w-[400px] h-[400px] bg-emerald-400/20 blur-[150px] top-[25%] left-[15%] rounded-full animate-pulse" />
+      <div className="absolute w-[350px] h-[350px] bg-yellow-300/15 blur-[130px] bottom-[20%] right-[15%] rounded-full animate-pulse" />
 
-      {/* FORMULARIO */}
+      {/* 🧾 Tarjeta principal */}
       <motion.form
         onSubmit={handleLogin}
-        className="z-10 bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl p-8 w-[90%] max-w-sm shadow-2xl space-y-5"
-        initial={{ scale: 0.95, opacity: 0 }}
+        className="relative z-10 bg-white/10 backdrop-blur-2xl border border-white/20 rounded-3xl p-8 w-[90%] max-w-sm shadow-2xl space-y-5"
+        initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.6 }}
       >
+        {/* LOGO */}
+        <motion.img
+          src={logo}
+          alt="Vibbe Logo"
+          className="w-24 h-24 mx-auto mb-4 drop-shadow-2xl rounded-2xl"
+          initial={{ opacity: 0, y: -30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        />
+
         <h2 className="text-3xl font-extrabold text-center bg-gradient-to-r from-emerald-400 to-yellow-300 bg-clip-text text-transparent">
           Bienvenido
         </h2>
@@ -61,6 +49,7 @@ export default function Login() {
           Accede a tu cuenta Vibbe
         </p>
 
+        {/* Inputs */}
         <div className="space-y-4">
           <input
             type="email"
@@ -68,7 +57,8 @@ export default function Login() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="w-full p-3 rounded-xl bg-white/10 text-white placeholder-gray-400 
-                       border border-white/20 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/50 outline-none transition"
+                       border border-white/20 focus:border-emerald-400 focus:ring-2 
+                       focus:ring-emerald-400/50 outline-none transition"
           />
           <input
             type="password"
@@ -76,12 +66,14 @@ export default function Login() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="w-full p-3 rounded-xl bg-white/10 text-white placeholder-gray-400 
-                       border border-white/20 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/50 outline-none transition"
+                       border border-white/20 focus:border-emerald-400 focus:ring-2 
+                       focus:ring-emerald-400/50 outline-none transition"
           />
         </div>
 
+        {/* Botón de acceso */}
         <motion.button
-          whileHover={{ scale: 1.03 }}
+          whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.97 }}
           type="submit"
           className="w-full py-3 rounded-xl font-semibold text-gray-900 bg-gradient-to-r 
@@ -90,6 +82,7 @@ export default function Login() {
           Iniciar sesión
         </motion.button>
 
+        {/* Enlace a registro */}
         <p className="text-center text-gray-400 text-sm mt-4">
           ¿No tienes cuenta?{" "}
           <span
@@ -100,6 +93,6 @@ export default function Login() {
           </span>
         </p>
       </motion.form>
-    </motion.div>
+    </div>
   );
 }

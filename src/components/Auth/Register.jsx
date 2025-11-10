@@ -2,98 +2,149 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import logo from "../../assets/logo.png";
 import { useNavigate } from "react-router-dom";
+import AuthBackground from "./AuthBackground"; // ✅ fondo animado reutilizable
 
 export default function Register() {
   const navigate = useNavigate();
-  const [nombre, setNombre] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
+  const [form, setForm] = useState({
+    nombre: "",
+    email: "",
+    password: "",
+    confirm: "",
+    direccion: "",
+    telefono: "",
+    curso: "",
+    nacimiento: "",
+  });
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
   const handleRegister = (e) => {
     e.preventDefault();
-    if (password !== confirm) {
+    if (form.password !== form.confirm) {
       alert("Las contraseñas no coinciden");
       return;
     }
+    console.log("✅ Datos de registro enviados:", form);
+    alert("Registro completado correctamente");
     navigate("/login");
   };
 
   return (
-    <motion.div
-      className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden"
-      style={{
-        background: "linear-gradient(135deg, #05161b 0%, #082129 60%, #0c2f36 100%)",
-        color: "white",
-      }}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-    >
-      {/* Fondo animado */}
-      <motion.div
-        className="absolute inset-0 z-0"
-        style={{
-          background:
-            "radial-gradient(circle at 30% 20%, rgba(46, 204, 113, 0.15), transparent 60%), radial-gradient(circle at 70% 80%, rgba(241, 196, 15, 0.1), transparent 70%)",
-        }}
-        animate={{
-          backgroundPosition: ["0% 0%", "100% 100%", "0% 0%"],
-        }}
-        transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-      />
+    <div className="relative flex flex-col items-center justify-center min-h-screen overflow-hidden">
+      {/* 🌌 Fondo dinámico de partículas + parallax */}
+      <AuthBackground />
 
-      {/* LOGO */}
-      <motion.img
-        src={logo}
-        alt="Vibbe Logo"
-        className="w-28 h-28 mb-6 z-10 drop-shadow-2xl"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-      />
+      {/* 💡 Luces decorativas suaves */}
+      <div className="absolute w-[450px] h-[450px] bg-emerald-400/20 blur-[150px] top-[20%] left-[15%] rounded-full animate-pulse" />
+      <div className="absolute w-[300px] h-[300px] bg-yellow-300/15 blur-[120px] bottom-[15%] right-[20%] rounded-full animate-pulse" />
 
-      {/* FORMULARIO */}
+      {/* 🧾 FORMULARIO */}
       <motion.form
         onSubmit={handleRegister}
-        className="z-10 bg-white/10 backdrop-blur-lg border border-white/20 rounded-3xl p-8 w-[90%] max-w-sm shadow-2xl space-y-4"
-        initial={{ scale: 0.95, opacity: 0 }}
+        className="relative z-10 bg-white/10 backdrop-blur-2xl border border-white/20 rounded-3xl p-8 w-[90%] max-w-md shadow-2xl space-y-4"
+        initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.6 }}
       >
+        {/* LOGO */}
+        <motion.img
+          src={logo}
+          alt="Vibbe Logo"
+          className="w-24 h-24 mx-auto mb-4 drop-shadow-2xl rounded-2xl"
+          initial={{ opacity: 0, y: -30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        />
+
         <h2 className="text-3xl font-extrabold text-center bg-gradient-to-r from-emerald-400 to-yellow-300 bg-clip-text text-transparent">
           Crear cuenta
         </h2>
-        <p className="text-gray-300 text-sm text-center mb-2">
-          Únete al programa Vibbe
+        <p className="text-gray-300 text-sm text-center mb-4">
+          Únete al programa Vibbe y empieza a ganar recompensas 🎉
         </p>
 
-        {[
-          { placeholder: "Nombre completo", value: nombre, setter: setNombre },
-          { placeholder: "Correo electrónico", value: email, setter: setEmail },
-          { placeholder: "Contraseña", value: password, setter: setPassword, type: "password" },
-          { placeholder: "Confirmar contraseña", value: confirm, setter: setConfirm, type: "password" },
-        ].map((field, i) => (
+        {/* GRID DE INPUTS */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <input
-            key={i}
-            type={field.type || "text"}
-            placeholder={field.placeholder}
-            value={field.value}
-            onChange={(e) => field.setter(e.target.value)}
-            className="w-full p-3 rounded-xl bg-white/10 text-white placeholder-gray-400 
-                       border border-white/20 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/50 outline-none transition"
+            name="nombre"
+            type="text"
+            placeholder="Nombre completo"
+            value={form.nombre}
+            onChange={handleChange}
+            className="p-3 rounded-xl bg-white/10 text-white placeholder-gray-400 border border-white/20 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/50 outline-none transition"
           />
-        ))}
+          <input
+            name="email"
+            type="email"
+            placeholder="Correo electrónico"
+            value={form.email}
+            onChange={handleChange}
+            className="p-3 rounded-xl bg-white/10 text-white placeholder-gray-400 border border-white/20 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/50 outline-none transition"
+          />
+          <input
+            name="password"
+            type="password"
+            placeholder="Contraseña"
+            value={form.password}
+            onChange={handleChange}
+            className="p-3 rounded-xl bg-white/10 text-white placeholder-gray-400 border border-white/20 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/50 outline-none transition"
+          />
+          <input
+            name="confirm"
+            type="password"
+            placeholder="Confirmar contraseña"
+            value={form.confirm}
+            onChange={handleChange}
+            className="p-3 rounded-xl bg-white/10 text-white placeholder-gray-400 border border-white/20 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/50 outline-none transition"
+          />
+          <input
+            name="direccion"
+            type="text"
+            placeholder="Dirección"
+            value={form.direccion}
+            onChange={handleChange}
+            className="p-3 rounded-xl bg-white/10 text-white placeholder-gray-400 border border-white/20 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/50 outline-none transition"
+          />
+          <input
+            name="telefono"
+            type="tel"
+            placeholder="Teléfono"
+            value={form.telefono}
+            onChange={handleChange}
+            className="p-3 rounded-xl bg-white/10 text-white placeholder-gray-400 border border-white/20 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/50 outline-none transition"
+          />
+          <input
+            name="curso"
+            type="text"
+            placeholder="Curso (Ej: 2º ESO)"
+            value={form.curso}
+            onChange={handleChange}
+            className="p-3 rounded-xl bg-white/10 text-white placeholder-gray-400 border border-white/20 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/50 outline-none transition"
+          />
+          <input
+            name="nacimiento"
+            type="date"
+            value={form.nacimiento}
+            onChange={handleChange}
+            className="p-3 rounded-xl bg-white/10 text-white placeholder-gray-400 border border-white/20 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/50 outline-none transition"
+          />
+        </div>
 
+        {/* BOTÓN REGISTRO */}
         <motion.button
-          whileHover={{ scale: 1.03 }}
+          whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.97 }}
           type="submit"
-          className="w-full py-3 rounded-xl font-semibold text-gray-900 bg-gradient-to-r 
+          className="w-full py-3 mt-4 rounded-xl font-semibold text-gray-900 bg-gradient-to-r 
                      from-emerald-400 via-lime-300 to-yellow-300 hover:opacity-90 transition"
         >
           Registrarse
         </motion.button>
 
+        {/* ENLACE LOGIN */}
         <p className="text-center text-gray-400 text-sm mt-4">
           ¿Ya tienes cuenta?{" "}
           <span
@@ -104,6 +155,6 @@ export default function Register() {
           </span>
         </p>
       </motion.form>
-    </motion.div>
+    </div>
   );
 }
