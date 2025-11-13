@@ -13,6 +13,7 @@ import Rewards from "./components/Dashboard/Rewards";
 import Locations from "./components/Dashboard/Locations";
 import Profile from "./components/Dashboard/Profile";
 import Qr from "./components/Dashboard/Qr";
+import Game from "./components/Dashboard/Game";
 
 export default function App() {
   return (
@@ -30,6 +31,7 @@ export default function App() {
         <Route path="/rewards" element={<Rewards />} />
         <Route path="/locations" element={<Locations />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/game" element={<Game />} />
 
         {/* 404 simple (redirige al login) */}
         <Route path="*" element={<Navigate to="/login" replace />} />

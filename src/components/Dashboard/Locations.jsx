@@ -3,10 +3,10 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import { motion } from "framer-motion";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+import BackArrow from "../common/BackArrow"; 
 
-// 🧭 Icono personalizado verde Vibbe
 const vibbeIcon = new L.Icon({
-  iconUrl: "https://cdn-icons-png.flaticon.com/512/854/854878.png", // icono marcador verde
+  iconUrl: "https://cdn-icons-png.flaticon.com/512/854/854878.png",
   iconSize: [32, 32],
   iconAnchor: [16, 32],
   popupAnchor: [0, -32],
@@ -53,9 +53,12 @@ export default function Locations() {
 
   return (
     <div
-      className="min-h-screen flex flex-col items-center px-4 py-8"
+      className="min-h-screen flex flex-col items-center px-4 py-8 relative"
       style={{ backgroundColor: "#082129", color: "white" }}
     >
+      {/* 🔙 Flecha de volver */}
+      <BackArrow to="/home" />
+
       <motion.h1
         className="text-3xl font-bold text-emerald-400 mb-4 text-center"
         initial={{ opacity: 0, y: -20 }}
@@ -70,7 +73,7 @@ export default function Locations() {
 
       {/* 🗺️ MAPA INTERACTIVO */}
       <MapContainer
-        center={[40.4168, -3.7038]} // Madrid centro como referencia
+        center={[40.4168, -3.7038]}
         zoom={15}
         style={{
           height: "70vh",
@@ -85,11 +88,7 @@ export default function Locations() {
         />
 
         {locales.map((local) => (
-          <Marker
-            key={local.id}
-            position={[local.lat, local.lng]}
-            icon={vibbeIcon}
-          >
+          <Marker key={local.id} position={[local.lat, local.lng]} icon={vibbeIcon}>
             <Popup>
               <div className="text-center">
                 <h3 className="font-bold text-emerald-600">{local.nombre}</h3>

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Wheel } from "react-custom-roulette";
+import BackArrow from "../common/BackArrow"; // 👈 AÑADIDO
 
 export default function Rewards() {
   const [puntos, setPuntos] = useState(1250);
@@ -130,9 +131,12 @@ export default function Rewards() {
 
   return (
     <div
-      className="min-h-screen flex flex-col items-center px-4 py-10"
+      className="min-h-screen flex flex-col items-center px-4 py-10 relative"
       style={{ backgroundColor: "#082129", color: "white" }}
     >
+      {/* 🔙 Flecha BACK */}
+      <BackArrow to="/home" />
+
       {/* TÍTULO */}
       <motion.h1
         className="text-3xl font-bold text-emerald-400 mb-2"
@@ -141,6 +145,7 @@ export default function Rewards() {
       >
         🎁 Premios y Sorteos
       </motion.h1>
+
       <p className="text-gray-300 mb-6">¡Gira la ruleta, rasca o canjea tus puntos!</p>
 
       {/* TARJETA DE PUNTOS */}
@@ -149,7 +154,7 @@ export default function Rewards() {
         <h2 className="text-5xl font-bold text-emerald-400">{puntos}</h2>
       </div>
 
-      {/* RULETA PROFESIONAL */}
+      {/* RULETA */}
       <div className="flex flex-col items-center mb-10">
         <Wheel
           mustStartSpinning={mustSpin}
@@ -205,6 +210,7 @@ export default function Rewards() {
 
         <div className="relative w-[300px] h-[150px] mx-auto flex items-center justify-center bg-gradient-to-r from-emerald-400 to-yellow-300 text-gray-900 rounded-xl mb-4 font-bold text-xl">
           {premioRasca ? premioRasca : "?"}
+
           <canvas
             ref={canvasRef}
             width={300}
@@ -251,6 +257,7 @@ export default function Rewards() {
         <h2 className="text-xl font-bold text-emerald-400 mb-4 text-center">
           🎯 Premios disponibles
         </h2>
+
         <div className="flex flex-col gap-3">
           {canjeables.map((premio) => (
             <motion.div
@@ -262,6 +269,7 @@ export default function Rewards() {
                 <span className="text-2xl">{premio.icono}</span>
                 <span className="text-white font-medium">{premio.nombre}</span>
               </div>
+
               <button
                 onClick={() => canjearPremio(premio)}
                 className="bg-gradient-to-r from-emerald-400 to-yellow-300 text-gray-900 font-semibold px-4 py-1 rounded-xl text-sm hover:opacity-90"

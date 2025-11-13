@@ -29,6 +29,7 @@ export default function Home() {
     { icon: "💳", texto: "Generar QR", ruta: "/qr" },
     { icon: "📊", texto: "Consultar Puntos", ruta: "/points" },
     { icon: "🎁", texto: "Premios y Sorteos", ruta: "/rewards" },
+    { icon: "🎮", texto: "Vibbe Run", ruta: "/game" },
     { icon: "📍", texto: "Nuestros Locales", ruta: "/locations" },
     { icon: "👤", texto: "Mi Perfil", ruta: "/profile" },
   ];
