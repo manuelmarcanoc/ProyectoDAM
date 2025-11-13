@@ -12,6 +12,7 @@ import Points from "./components/Dashboard/Points";
 import Rewards from "./components/Dashboard/Rewards";
 import Locations from "./components/Dashboard/Locations";
 import Profile from "./components/Dashboard/Profile";
+import Qr from "./components/Dashboard/Qr";
 
 export default function App() {
   return (
@@ -21,6 +22,7 @@ export default function App() {
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/qr" element={<Qr />} />
 
         {/* App */}
         <Route path="/home" element={<Home />} />
