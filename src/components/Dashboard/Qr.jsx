@@ -1,104 +1,111 @@
 // src/components/Dashboard/Qr.jsx
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import BackArrow from "../common/BackArrow";
 import logo from "../../assets/logo.png";
-import BackArrow from "../common/BackArrow"; // 👈 IMPORTA LA FLECHA
 
 export default function Qr() {
   const [text, setText] = useState("UsuarioDemo@vibbe.com");
   const [qrUrl, setQrUrl] = useState(
-    "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=UsuarioDemo@vibbe.com"
+    "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=UsuarioDemo@vibbe.com"
   );
   const [version, setVersion] = useState(0);
+  const [animWave, setAnimWave] = useState(false);
 
   const handleGenerate = () => {
     if (!text.trim()) {
-      alert("Introduce un texto o ID para generar el QR.");
+      alert("Introduce un texto válido");
       return;
     }
-    // Forzamos URL única para refrescar imagen + animación
-    const url = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(
-      text
-    )}&_=${Date.now()}`;
-    setQrUrl(url);
+
+    const newUrl =
+      "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" +
+      encodeURIComponent(text) +
+      "&_=" +
+      Date.now();
+
+    setQrUrl(newUrl);
     setVersion((v) => v + 1);
+
+    setAnimWave(true);
+    setTimeout(() => setAnimWave(false), 900);
   };
 
   const handleDownload = () => {
     const a = document.createElement("a");
     a.href = qrUrl;
     a.download = "vibbe_qr.png";
-    document.body.appendChild(a);
     a.click();
-    document.body.removeChild(a);
   };
 
   return (
     <motion.div
-      className="relative min-h-screen flex flex-col items-center justify-center px-6 py-10 overflow-hidden"
-      style={{
-        background: "linear-gradient(135deg, #04161a 0%, #082129 60%, #0c2f36 100%)",
-        color: "white",
-      }}
+      className="relative min-h-screen flex flex-col items-center justify-start px-6 py-10 text-white overflow-hidden"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
     >
-      {/* Flecha arriba-izquierda */}
       <BackArrow to="/home" />
 
-      {/* Fondo animado sutil */}
-      <motion.div
-        className="absolute inset-0 z-0 pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(circle at 20% 20%, rgba(52,211,153,.12), transparent 60%), radial-gradient(circle at 80% 80%, rgba(250,204,21,.1), transparent 60%)",
-        }}
-        animate={{ backgroundPosition: ["0% 0%", "100% 100%", "0% 0%"] }}
-        transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-      />
+      {/* Fondo premium */}
+      <div className="absolute inset-0 -z-20 bg-gradient-to-br from-[#02080b] via-[#05171c] to-[#093036]" />
 
-      {/* Logo */}
+      {/* Neblina de color */}
+      <div className="absolute inset-0 -z-10 pointer-events-none bg-[radial-gradient(circle_at_30%_20%,rgba(52,211,153,0.16),transparent_60%),radial-gradient(circle_at_80%_70%,rgba(250,204,21,0.15),transparent_60%)]" />
+
       <motion.img
         src={logo}
-        alt="Vibbe"
-        className="w-24 h-24 mb-3 z-10 drop-shadow-2xl"
-        initial={{ opacity: 0, y: -25 }}
+        alt="logo"
+        className="w-24 h-24 mb-3 drop-shadow-[0_0_20px_rgba(52,211,153,0.4)]"
+        initial={{ opacity: 0, y: -15 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
       />
 
-      <h1 className="text-3xl font-bold text-emerald-400 mb-2 z-10">
+      <h1 className="text-3xl sm:text-4xl font-extrabold bg-gradient-to-r from-emerald-400 to-yellow-300 bg-clip-text text-transparent mb-3 text-center">
         Tu código QR Vibbe
       </h1>
-      <p className="text-gray-300 text-center text-sm mb-6 z-10">
-        Escanéalo para sumar puntos o acceder a promociones 🎁
+
+      <p className="text-gray-300 text-center max-w-xs mb-6">
+        Escanéalo en comercios para sumar puntos y activar beneficios.
       </p>
 
       {/* Tarjeta QR */}
       <motion.div
-        className="relative z-10 bg-white/10 backdrop-blur-2xl border border-white/20 p-6 rounded-3xl shadow-2xl w-full max-w-md flex flex-col items-center"
-        initial={{ scale: 0.95, opacity: 0 }}
+        className="relative bg-white/10 border border-white/20 p-7 rounded-3xl backdrop-blur-xl shadow-xl w-full max-w-md flex flex-col items-center"
+        initial={{ scale: 0.92, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.4 }}
       >
-        {/* Luz sutil */}
-        <motion.div
-          className="absolute inset-0 rounded-3xl pointer-events-none"
-          style={{ background: "linear-gradient(145deg, rgba(52,211,153,.08), rgba(250,204,21,.08))" }}
-          animate={{ opacity: [0.3, 0.5, 0.3] }}
-          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-        />
+        {/* Glow */}
+        <div className="absolute -inset-[3px] rounded-3xl bg-gradient-to-r from-emerald-400 to-yellow-300 opacity-20 blur-xl -z-10"></div>
 
-        {/* Imagen QR con animación al regenerar */}
+        {/* Ondas de animación (NO encima del QR) */}
+        {animWave && (
+          <>
+            <motion.div
+              className="absolute inset-0 rounded-3xl border-2 border-emerald-300/40"
+              initial={{ scale: 0.85, opacity: 0.8 }}
+              animate={{ scale: 1.15, opacity: 0 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+            />
+
+            <motion.div
+              className="absolute inset-0 rounded-3xl border-2 border-yellow-300/40"
+              initial={{ scale: 1, opacity: 0.8 }}
+              animate={{ scale: 1.25, opacity: 0 }}
+              transition={{ duration: 0.9, ease: "easeOut" }}
+            />
+          </>
+        )}
+
+        {/* QR */}
         <AnimatePresence mode="wait">
           <motion.img
             key={version}
             src={qrUrl}
-            alt="Código QR"
-            className="w-56 h-56 mb-5 rounded-2xl border border-emerald-400/40 shadow-[0_0_24px_rgba(52,211,153,0.35)] bg-white"
-            initial={{ scale: 0.75, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.75, opacity: 0 }}
+            alt="QR"
+            className="w-64 h-64 rounded-xl bg-white shadow-[0_0_22px_rgba(52,211,153,0.25)]"
+            initial={{ opacity: 0, scale: 0.85 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.85 }}
             transition={{ duration: 0.35 }}
           />
         </AnimatePresence>
@@ -106,28 +113,25 @@ export default function Qr() {
         {/* Input */}
         <input
           type="text"
+          className="mt-6 w-full text-center p-3 rounded-xl bg-white/10 text-white border border-white/20 focus:border-emerald-400 outline-none"
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="Introduce tu ID o texto..."
-          className="w-full text-center p-3 rounded-xl bg-white/10 text-white placeholder-gray-400 border border-white/20 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/40 outline-none transition mb-4"
         />
 
         {/* Botones */}
-        <div className="flex gap-3">
+        <div className="flex gap-4 mt-5">
           <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
             onClick={handleGenerate}
-            className="px-5 py-2 rounded-xl font-semibold text-gray-900 bg-gradient-to-r from-emerald-400 via-lime-300 to-yellow-300 hover:opacity-90 transition"
+            whileTap={{ scale: 0.95 }}
+            className="px-6 py-3 rounded-xl font-semibold text-black bg-gradient-to-r from-emerald-400 via-lime-300 to-yellow-300 shadow-lg"
           >
-            Generar QR
+            Generar
           </motion.button>
 
           <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
             onClick={handleDownload}
-            className="px-5 py-2 rounded-xl font-semibold text-white bg-emerald-500/30 border border-emerald-400/40 hover:bg-emerald-400/50 transition"
+            whileTap={{ scale: 0.95 }}
+            className="px-6 py-3 rounded-xl font-semibold bg-emerald-600/40 border border-emerald-300/40 text-white"
           >
             Descargar
           </motion.button>
