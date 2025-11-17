@@ -1,284 +1,279 @@
-import React, { useState, useRef, useEffect } from "react";
-import { motion } from "framer-motion";
+import React, { useState, useEffect, useRef } from "react";
 import { Wheel } from "react-custom-roulette";
-import BackArrow from "../common/BackArrow"; // 👈 AÑADIDO
+import { motion } from "framer-motion";
+import BackArrow from "../common/BackArrow";
+
+const wheelData = [
+  { option: "+50 pts", value: 50 },
+  { option: "+150 pts", value: 150 },
+  { option: "x2 puntos", value: "x2" },
+  { option: "Sin premio", value: 0 },
+  { option: "-20 pts", value: -20 },
+  { option: "+300 pts", value: 300 },
+];
+
+const storeItems = [
+  { id: 1, nombre: "Café gratis", costo: 200, icono: "☕" },
+  { id: 2, nombre: "Descuento 10€", costo: 350, icono: "💸" },
+  { id: 3, nombre: "Camiseta Vibbe", costo: 800, icono: "👕" },
+];
 
 export default function Rewards() {
-  const [puntos, setPuntos] = useState(1250);
+  const [puntos, setPuntos] = useState(1000);
+
+  // Ruleta
   const [mustSpin, setMustSpin] = useState(false);
   const [prizeNumber, setPrizeNumber] = useState(0);
-  const [mensaje, setMensaje] = useState("");
-  const [premioRasca, setPremioRasca] = useState(null);
-  const [descubierto, setDescubierto] = useState(false);
-  const [rascando, setRascando] = useState(false);
+  const [ruletaResultado, setRuletaResultado] = useState(null);
 
+  // Rasca
   const canvasRef = useRef(null);
+  const [scratchResult, setScratchResult] = useState(null);
+  const [scratching, setScratching] = useState(false);
 
-  // --- DATOS DE LA RULETA ---
-  const data = [
-    { option: "💎 +50 pts", value: 50 },
-    { option: "🎁 10% Descuento", value: 100 },
-    { option: "😢 Pierdes 20 pts", value: -20 },
-    { option: "🎉 +200 pts", value: 200 },
-    { option: "💀 Sin premio", value: 0 },
-    { option: "🔥 x2 puntos", value: "x2" },
-  ];
+  // Sorteo
+  const [tickets, setTickets] = useState(0);
 
-  const canjeables = [
-    { id: 1, nombre: "Café Gratis", costo: 200, icono: "☕" },
-    { id: 2, nombre: "Descuento 10€", costo: 400, icono: "💸" },
-    { id: 3, nombre: "Sorteo Especial", costo: 300, icono: "🎟️" },
-    { id: 4, nombre: "Camiseta Vibbe", costo: 800, icono: "👕" },
-  ];
+  // ==================== RULETA ====================
+  const spin = () => {
+    if (mustSpin || puntos < 25) return;
 
-  // --- 🎡 FUNCIONALIDAD DE LA RULETA ---
-  const girarRuleta = () => {
-    if (puntos < 10 || mustSpin) return;
-    setPuntos((prev) => prev - 10);
-    setMensaje("");
-    const newPrizeNumber = Math.floor(Math.random() * data.length);
-    setPrizeNumber(newPrizeNumber);
+    setPuntos(p => p - 25);
+    setRuletaResultado(null);
+
+    const n = Math.floor(Math.random() * wheelData.length);
+    setPrizeNumber(n);
     setMustSpin(true);
   };
 
-  const aplicarPremio = (premio) => {
-    let nuevoPuntaje = puntos;
-    if (premio.value === "x2") nuevoPuntaje *= 2;
-    else nuevoPuntaje += premio.value;
-    setPuntos(nuevoPuntaje);
-    setMensaje(`Resultado: ${premio.option}`);
+  const onStop = () => {
+    const premio = wheelData[prizeNumber];
+
+    setMustSpin(false);
+    setRuletaResultado(premio.option);
+
+    setPuntos(p => premio.value === "x2" ? p * 2 : p + premio.value);
   };
 
-  const canjearPremio = (premio) => {
-    if (puntos >= premio.costo) {
-      setPuntos(puntos - premio.costo);
-      alert(`🎉 Has canjeado ${premio.nombre}!`);
-    } else {
-      alert("❌ No tienes suficientes puntos para este premio.");
-    }
-  };
-
-  // --- 🎯 RASCA Y GANA ---
+  // ==================== RASCA ====================
   useEffect(() => {
-    inicializarCanvas();
+    resetScratch();
   }, []);
 
-  const inicializarCanvas = () => {
+  const resetScratch = () => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
     const ctx = canvas.getContext("2d");
-    const width = canvas.width;
-    const height = canvas.height;
 
-    ctx.globalCompositeOperation = "source-over";
-    ctx.fillStyle = "#b0b0b0";
-    ctx.fillRect(0, 0, width, height);
-    ctx.fillStyle = "#ccc";
-    ctx.font = "bold 20px Inter";
+    ctx.fillStyle = "#444";
+    ctx.fillRect(0, 0, 300, 150);
+
+    ctx.fillStyle = "#eee";
+    ctx.font = "20px sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText("Rasca aquí 🎯", width / 2, height / 2 + 7);
+    ctx.fillText("Rasca aquí", 150, 80);
 
-    setDescubierto(false);
-    setPremioRasca(null);
+    setScratchResult(null);
   };
 
-  const startRascar = () => setRascando(true);
-  const stopRascar = () => setRascando(false);
+  const startScratch = () => setScratching(true);
+  const stopScratch = () => setScratching(false);
 
-  const rascar = (e) => {
-    if (!rascando || descubierto) return;
+  const scratchMove = e => {
+    if (!scratching || scratchResult) return;
 
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left || e.touches?.[0]?.clientX - rect.left;
-    const y = e.clientY - rect.top || e.touches?.[0]?.clientY - rect.top;
+
+    const x = (e.touches?.[0]?.clientX || e.clientX) - rect.left;
+    const y = (e.touches?.[0]?.clientY || e.clientY) - rect.top;
 
     ctx.globalCompositeOperation = "destination-out";
     ctx.beginPath();
-    ctx.arc(x, y, 15, 0, Math.PI * 2);
+    ctx.arc(x, y, 20, 0, Math.PI * 2);
     ctx.fill();
 
-    const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    // Calcular %
+    const pixels = ctx.getImageData(0, 0, 300, 150);
     let cleared = 0;
-    for (let i = 3; i < pixels.data.length; i += 4) {
+    for (let i = 3; i < pixels.data.length; i += 4)
       if (pixels.data[i] === 0) cleared++;
-    }
-    const porcentaje = (cleared / (pixels.data.length / 4)) * 100;
 
-    if (porcentaje > 60 && !descubierto) {
-      setDescubierto(true);
-      const resultados = [
-        { texto: "🎉 ¡Ganaste 100 puntos!", valor: 100 },
-        { texto: "💎 ¡50 puntos extra!", valor: 50 },
-        { texto: "😢 Sin premio", valor: 0 },
-        { texto: "🎁 Descuento especial", valor: 0 },
+    if (cleared / (pixels.data.length / 4) > 0.55) {
+      const premios = [
+        { texto: "+100 pts", val: 100 },
+        { texto: "+50 pts", val: 50 },
+        { texto: "0 pts", val: 0 },
       ];
-      const resultado = resultados[Math.floor(Math.random() * resultados.length)];
-      setPremioRasca(resultado.texto);
-      setPuntos((prev) => prev + resultado.valor);
+      const r = premios[Math.floor(Math.random() * premios.length)];
+      setScratchResult(r.texto);
+      setPuntos(p => p + r.val);
     }
   };
 
-  const volverARascar = () => {
-    if (puntos < 200) {
-      alert("❌ Necesitas al menos 200 puntos para volver a rascar.");
-      return;
-    }
-    setPuntos((prev) => prev - 200);
-    inicializarCanvas();
+  // ==================== SORTEO ====================
+  const buyTicket = () => {
+    if (puntos < 50) return alert("No tienes suficientes puntos");
+    setPuntos(p => p - 50);
+    setTickets(t => t + 1);
+  };
+
+  const canjear = item => {
+    if (puntos < item.costo)
+      return alert("No tienes suficientes puntos");
+
+    setPuntos(p => p - item.costo);
+    alert(`🎉 Canjeado: ${item.nombre}`);
   };
 
   return (
-    <div
-      className="min-h-screen flex flex-col items-center px-4 py-10 relative"
-      style={{ backgroundColor: "#082129", color: "white" }}
-    >
-      {/* 🔙 Flecha BACK */}
+    <div className="min-h-screen py-10 px-4 bg-[#050505] text-white relative">
+
+      {/* GLOW DE FONDO */}
+      <div className="absolute inset-0 opacity-40 pointer-events-none bg-[radial-gradient(circle_at_30%_20%,rgba(16,185,129,0.35),transparent_60%),radial-gradient(circle_at_80%_70%,rgba(59,130,246,0.35),transparent_60%)]"></div>
+
       <BackArrow to="/home" />
 
-      {/* TÍTULO */}
-      <motion.h1
-        className="text-3xl font-bold text-emerald-400 mb-2"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-      >
-        🎁 Premios y Sorteos
-      </motion.h1>
+      <h1 className="text-4xl font-extrabold text-center mb-8 bg-gradient-to-r from-emerald-400 to-cyan-300 bg-clip-text text-transparent">
+        🎁 Recompensas Vibbe
+      </h1>
 
-      <p className="text-gray-300 mb-6">¡Gira la ruleta, rasca o canjea tus puntos!</p>
-
-      {/* TARJETA DE PUNTOS */}
-      <div className="bg-white/10 rounded-2xl border border-white/20 p-4 mb-8 w-full max-w-sm text-center">
-        <p className="text-gray-300">Puntos disponibles</p>
-        <h2 className="text-5xl font-bold text-emerald-400">{puntos}</h2>
-      </div>
-
-      {/* RULETA */}
-      <div className="flex flex-col items-center mb-10">
-        <Wheel
-          mustStartSpinning={mustSpin}
-          prizeNumber={prizeNumber}
-          data={data}
-          backgroundColors={[
-            "#34d399",
-            "#fde047",
-            "#f87171",
-            "#a78bfa",
-            "#4ade80",
-            "#fbbf24",
-          ]}
-          textColors={["#082129"]}
-          fontSize={16}
-          outerBorderColor="#082129"
-          radiusLineWidth={1}
-          innerRadius={15}
-          spinDuration={0.8}
-          onStopSpinning={() => {
-            setMustSpin(false);
-            aplicarPremio(data[prizeNumber]);
-          }}
-        />
-
-        <motion.button
-          onClick={girarRuleta}
-          disabled={mustSpin || puntos < 10}
-          className={`mt-6 px-8 py-3 rounded-xl font-bold text-gray-900 ${
-            puntos < 10
-              ? "bg-gray-400 cursor-not-allowed"
-              : "bg-gradient-to-r from-emerald-400 to-yellow-300 hover:opacity-90"
-          }`}
-          whileTap={{ scale: puntos >= 10 ? 0.95 : 1 }}
-        >
-          {mustSpin ? "Girando..." : "¡GIRAR!"}
-        </motion.button>
-      </div>
-
-      {mensaje && (
+      {/* Punto total */}
+      <div className="text-center mb-10">
+        <p className="text-gray-400">Puntos disponibles</p>
         <motion.p
-          className="mt-4 text-lg text-emerald-300"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          key={puntos}
+          initial={{ scale: 0.85 }}
+          animate={{ scale: 1 }}
+          className="text-6xl font-bold text-emerald-400 drop-shadow-lg"
         >
-          {mensaje}
+          {puntos}
         </motion.p>
-      )}
-
-      {/* RASCA Y GANA */}
-      <div className="mt-12 mb-10 w-full max-w-md text-center">
-        <h2 className="text-xl font-bold text-emerald-400 mb-4">🎯 Rasca y Gana</h2>
-
-        <div className="relative w-[300px] h-[150px] mx-auto flex items-center justify-center bg-gradient-to-r from-emerald-400 to-yellow-300 text-gray-900 rounded-xl mb-4 font-bold text-xl">
-          {premioRasca ? premioRasca : "?"}
-
-          <canvas
-            ref={canvasRef}
-            width={300}
-            height={150}
-            className="absolute top-0 left-0 rounded-xl"
-            onMouseDown={startRascar}
-            onMouseUp={stopRascar}
-            onMouseMove={rascar}
-            onTouchStart={startRascar}
-            onTouchEnd={stopRascar}
-            onTouchMove={rascar}
-          />
-        </div>
-
-        {!descubierto ? (
-          <p className="text-gray-300 text-sm">
-            Rasca con el ratón o el dedo para descubrir si hay premio 🎁
-          </p>
-        ) : (
-          <>
-            <motion.p
-              className="text-emerald-300 font-semibold text-lg mb-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-            >
-              {premioRasca?.includes("Ganaste") || premioRasca?.includes("puntos")
-                ? "🎉 ¡Felicidades!"
-                : "😢 ¡Otra vez será!"}
-            </motion.p>
-
-            <motion.button
-              onClick={volverARascar}
-              className="bg-gradient-to-r from-emerald-400 to-yellow-300 text-gray-900 font-semibold px-6 py-2 rounded-xl hover:opacity-90 transition"
-              whileTap={{ scale: 0.95 }}
-            >
-              🔁 Volver a rascar (200 pts)
-            </motion.button>
-          </>
-        )}
       </div>
 
-      {/* LISTADO DE PREMIOS */}
-      <div className="mt-6 w-full max-w-md">
-        <h2 className="text-xl font-bold text-emerald-400 mb-4 text-center">
-          🎯 Premios disponibles
-        </h2>
+      {/* CONTENEDOR GRID */}
+      <div className="max-w-5xl mx-auto grid lg:grid-cols-2 gap-8">
 
-        <div className="flex flex-col gap-3">
-          {canjeables.map((premio) => (
-            <motion.div
-              key={premio.id}
-              className="flex justify-between items-center bg-white/10 border border-white/20 rounded-2xl px-5 py-3 hover:bg-emerald-400/10 transition"
-              whileHover={{ scale: 1.02 }}
-            >
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">{premio.icono}</span>
-                <span className="text-white font-medium">{premio.nombre}</span>
-              </div>
+        {/* RULETA */}
+        <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-6 shadow-xl">
+          <h2 className="text-xl font-semibold mb-4">🎡 Ruleta de premios</h2>
 
-              <button
-                onClick={() => canjearPremio(premio)}
-                className="bg-gradient-to-r from-emerald-400 to-yellow-300 text-gray-900 font-semibold px-4 py-1 rounded-xl text-sm hover:opacity-90"
-              >
-                {premio.costo} pts
-              </button>
-            </motion.div>
-          ))}
+          <div className="relative flex justify-center">
+            <div className="absolute w-64 h-64 bg-emerald-400/20 blur-3xl rounded-full"></div>
+            <Wheel
+              mustStartSpinning={mustSpin}
+              prizeNumber={prizeNumber}
+              data={wheelData}
+              onStopSpinning={onStop}
+              backgroundColors={["#34d399", "#fde047", "#f87171", "#818cf8"]}
+              textColors={["#000"]}
+              fontSize={18}
+              radiusLineWidth={1}
+            />
+          </div>
+
+          <motion.button
+            onClick={spin}
+            whileTap={{ scale: 0.95 }}
+            className="mt-6 px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-400 to-yellow-300 text-black font-semibold w-full hover:opacity-90"
+          >
+            Girar (25 pts)
+          </motion.button>
+
+          {ruletaResultado && (
+            <p className="text-center text-emerald-300 mt-3">
+              Resultado: {ruletaResultado}
+            </p>
+          )}
         </div>
+
+        {/* RASCA */}
+       <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-6 shadow-xl relative overflow-hidden">
+
+  <div className="absolute inset-0 pointer-events-none bg-[conic-gradient(from_0deg,rgba(16,185,129,0.1),rgba(56,189,248,0.1),rgba(168,85,247,0.1),rgba(244,114,182,0.1),rgba(16,185,129,0.1))] animate-spin-slow"></div>
+
+  <h2 className="text-xl font-semibold mb-4 relative">🎯 Rasca y gana</h2>
+
+  <div className="relative w-[320px] h-[180px] mx-auto rounded-3xl overflow-hidden shadow-xl border border-white/20">
+
+    {/* Tarjeta interior (resultado) */}
+    <div className="absolute inset-0 bg-gradient-to-br from-emerald-400 to-yellow-300 flex items-center justify-center text-black text-3xl font-extrabold tracking-wide">
+      {scratchResult || "?"}
+    </div>
+
+    {/* Capa metálica para rascar */}
+    <canvas
+      ref={canvasRef}
+      width={320}
+      height={180}
+      className="absolute inset-0 cursor-pointer"
+      onMouseDown={startScratch}
+      onMouseUp={stopScratch}
+      onMouseMove={scratchMove}
+      onTouchStart={startScratch}
+      onTouchEnd={stopScratch}
+      onTouchMove={scratchMove}
+    />
+
+    {/* Brillo animado */}
+    <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0.4)_40%,rgba(255,255,255,0)_70%)] animate-shine pointer-events-none"></div>
+
+  </div>
+
+  {scratchResult && (
+    <button
+      onClick={resetScratch}
+      className="mt-5 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-400 to-yellow-300 text-black font-semibold w-full hover:opacity-90"
+    >
+      Rascar otra vez (200 pts)
+    </button>
+  )}
+</div>
+
+        {/* SORTEO */}
+        <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-6 shadow-xl">
+          <h2 className="text-xl font-semibold mb-3">🎟 Sorteo semanal</h2>
+
+          <p className="text-gray-300 mb-3">Ticket = 50 pts</p>
+
+          <p className="text-5xl font-bold text-emerald-400 mb-4 text-center">
+            {tickets}
+          </p>
+
+          <button
+            onClick={buyTicket}
+            className="px-4 py-2 bg-emerald-400 text-black rounded-xl font-semibold w-full hover:opacity-90"
+          >
+            Comprar ticket
+          </button>
+        </div>
+
+        {/* TIENDA */}
+        <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-6 shadow-xl">
+          <h2 className="text-xl font-semibold mb-4 text-center">🛍 Tienda</h2>
+
+          <div className="space-y-3">
+            {storeItems.map(item => (
+              <div
+                key={item.id}
+                className="flex justify-between items-center bg-white/5 p-3 rounded-xl border border-white/10 hover:bg-white/10 transition"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">{item.icono}</span>
+                  <p>{item.nombre}</p>
+                </div>
+
+                <button
+                  onClick={() => canjear(item)}
+                  className="px-3 py-1 rounded-lg bg-gradient-to-r from-emerald-400 to-yellow-300 text-black text-sm font-semibold"
+                >
+                  {item.costo} pts
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
       </div>
     </div>
   );
