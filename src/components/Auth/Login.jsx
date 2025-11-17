@@ -15,12 +15,18 @@ export default function Login() {
     navigate("/home");
   };
 
+  // ⭐ LOGIN CON GOOGLE
+  const handleGoogleLogin = () => {
+    console.log("🔵 Login con Google…");
+    navigate("/home");
+  };
+
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen overflow-hidden">
       {/* 🌌 Fondo animado */}
       <AuthBackground />
 
-      {/* 💡 Luces decorativas suaves */}
+      {/* Luces decorativas */}
       <div className="absolute w-[400px] h-[400px] bg-emerald-400/20 blur-[150px] top-[25%] left-[15%] rounded-full animate-pulse" />
       <div className="absolute w-[350px] h-[350px] bg-yellow-300/15 blur-[130px] bottom-[20%] right-[15%] rounded-full animate-pulse" />
 
@@ -80,6 +86,23 @@ export default function Login() {
                      from-emerald-400 via-lime-300 to-yellow-300 hover:opacity-90 transition"
         >
           Iniciar sesión
+        </motion.button>
+
+        {/* ⭐ INICIO DE SESIÓN CON GOOGLE */}
+        <motion.button
+          onClick={handleGoogleLogin}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="w-full py-3 flex items-center justify-center gap-3 rounded-xl 
+                     bg-white text-gray-700 font-semibold shadow-md mt-3 hover:bg-gray-50 transition"
+        >
+          {/* ICONO GOOGLE */}
+          <img
+            src="https://www.svgrepo.com/show/475656/google-color.svg"
+            className="w-6 h-6"
+            alt="Google logo"
+          />
+          Iniciar sesión con Google
         </motion.button>
 
         {/* Enlace a registro */}

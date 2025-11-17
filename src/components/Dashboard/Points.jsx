@@ -1,5 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
+import BackArrow from "../common/BackArrow"; // ← AÑADIDO
 
 export default function Points() {
   const movimientos = [
@@ -19,6 +20,9 @@ export default function Points() {
       className="min-h-screen flex flex-col items-center px-6 py-10"
       style={{ backgroundColor: "#082129", color: "white" }}
     >
+      {/* Flecha de volver */}
+      <BackArrow to="/home" />
+
       {/* Título */}
       <motion.h1
         className="text-3xl font-bold text-emerald-400 mb-6"
