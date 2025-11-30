@@ -12,7 +12,7 @@ import { motion } from "framer-motion";
 import BackArrow from "../common/BackArrow";
 import "leaflet/dist/leaflet.css";
 
-// ======================= ICONOS ==========================
+// ==== ICONOS ====
 const vibbeIcon = new L.Icon({
   iconUrl: "https://cdn-icons-png.flaticon.com/512/854/854866.png",
   iconSize: [48, 48],
