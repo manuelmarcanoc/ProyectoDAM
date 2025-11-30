@@ -16,7 +16,7 @@ const wheelData = [
   { option: "+300 pts", value: 300 },
 ];
 
-// ======================= TIENDA =======================
+// ================= TIENDA ============
 const storeItems = [
   {
     id: 1,
@@ -74,11 +74,14 @@ export default function Rewards() {
 
   // ======================= RULETA =======================
   const [mustSpin, setMustSpin] = useState(false);
+
   const [prizeNumber, setPrizeNumber] = useState(0);
+
   const [ruletaResultado, setRuletaResultado] = useState(null);
 
   const spin = () => {
     if (mustSpin || puntos < 25) return;
+    
 
     setPuntos(p => p - 25);
     setRuletaResultado(null);
