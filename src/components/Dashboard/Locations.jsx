@@ -1,411 +1,440 @@
-// 💚💚💚  CÓDIGO PULIDO Y MEJORADO  💚💚💚
-
 import React, { useEffect, useMemo, useState } from "react";
 import {
   MapContainer,
   TileLayer,
   Marker,
   Popup,
+  Circle,
   useMap,
 } from "react-leaflet";
-import { motion } from "framer-motion";
 import L from "leaflet";
-import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import BackArrow from "../common/BackArrow";
 import "leaflet/dist/leaflet.css";
 
-// ====================== NUEVO ICONO PROFESIONAL ======================
+// ======================= ICONOS ==========================
 const vibbeIcon = new L.Icon({
-  iconUrl: "https://cdn-icons-png.flaticon.com/512/535/535239.png", // icono redondo tipo Uber
-  iconSize: [45, 45],
-  iconAnchor: [22, 45],
-  popupAnchor: [0, -40],
+  iconUrl: "https://cdn-icons-png.flaticon.com/512/854/854866.png",
+  iconSize: [48, 48],
+  iconAnchor: [24, 48],
+  popupAnchor: [0, -38],
 });
 
-// Usuario con glow verde
 const userIcon = new L.DivIcon({
-  className: "user-marker",
-  html: `<div style="
-    width:16px;height:16px;background:#4ade80;
-    border-radius:50%;
-    box-shadow:0 0 15px #4ade80;
-    border:2px solid #022c22;
-  "></div>`,
+  className: "",
+  html: `
+    <div style="
+      width:16px;height:16px;border-radius:50%;
+      background: radial-gradient(circle, #a6fff8, #00eaff);
+      box-shadow: 0 0 18px #00eaff, 0 0 30px #00eaffaa;
+      border:2px solid #00eaff;
+    "></div>
+  `,
 });
 
-// ====================== HELPERS ======================
-
-function haversineDistance(lat1, lon1, lat2, lon2) {
+// ======================= HELPERS ==========================
+function haversineDistance(a1, o1, a2, o2) {
   const R = 6371e3;
-  const toRad = (deg) => (deg * Math.PI) / 180;
-  const dLat = toRad(lat2 - lat1);
-  const dLon = toRad(lon2 - lon1);
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
+  const toRad = (g) => (g * Math.PI) / 180;
+  const dA = toRad(a2 - a1);
+  const dO = toRad(o2 - o1);
+
+  const A =
+    Math.sin(dA / 2) ** 2 +
+    Math.cos(toRad(a1)) * Math.cos(toRad(a2)) * Math.sin(dO / 2) ** 2;
+
+  return R * 2 * Math.atan2(Math.sqrt(A), Math.sqrt(1 - A));
 }
 
-function FlyTo({ coords }) {
+const formatDist = (d) =>
+  !d ? "" : d < 1000 ? `${Math.round(d)} m` : `${(d / 1000).toFixed(1)} km`;
+
+function Fly({ coords }) {
   const map = useMap();
   useEffect(() => {
-    if (coords) map.flyTo(coords, 16, { duration: 1.2 });
-  }, [coords]);
+    if (coords) map.flyTo(coords, 15, { duration: 1.2 });
+  }, [coords, map]);
   return null;
 }
 
-function FlyToUser({ coords }) {
-  const map = useMap();
-  useEffect(() => {
-    if (coords) map.flyTo(coords, 15, { duration: 1.3 });
-  }, [coords]);
-  return null;
-}
-
-// ====================== COMPONENTE ======================
+// ======================= COMPONENTE ==========================
 
 export default function Locations() {
-  const navigate = useNavigate();
-  const [userCoords, setUserCoords] = useState(null);
-  const [selectedId, setSelectedId] = useState(null);
+  const [user, setUser] = useState(null);
   const [category, setCategory] = useState("all");
   const [search, setSearch] = useState("");
+  const [radius, setRadius] = useState("all");
+  const [selected, setSelected] = useState(null);
+  const [geoError, setGeoError] = useState(false);
 
-  // 🔥 He añadido MUCHOS LOCALES NUEVOS y mejorado la variedad
+  // ------- LOCALES --------
+  // Barcelona centrado en zona Eixample / Rambla para que entren en el radio
   const locales = [
-    // Madrid
+    // ---------- BARCELONA - COMIDA ----------
     {
-      id: "madrid-paca",
+      id: "b1",
+      nombre: "Brunch & Coffee BCN",
+      emoji: "☕",
+      lat: 41.3865,
+      lng: 2.1692,
+      promo: "Café con leche gratis",
+      categoria: "comida",
+      direccion: "Carrer de Pelai, Barcelona",
+      img: "https://images.pexels.com/photos/374885/pexels-photo-374885.jpeg",
+    },
+    {
+      id: "b2",
+      nombre: "Pizzería Rambla",
+      emoji: "🍕",
+      lat: 41.3848,
+      lng: 2.1712,
+      promo: "2x1 en pizzas martes",
+      categoria: "comida",
+      direccion: "La Rambla, Barcelona",
+      img: "https://images.pexels.com/photos/2619967/pexels-photo-2619967.jpeg",
+    },
+    {
+      id: "b3",
+      nombre: "Taco Verde",
+      emoji: "🌮",
+      lat: 41.3892,
+      lng: 2.1658,
+      promo: "Nachos gratis con menú",
+      categoria: "comida",
+      direccion: "Carrer d'Aragó, Barcelona",
+      img: "https://images.pexels.com/photos/461198/pexels-photo-461198.jpeg",
+    },
+    {
+      id: "b4",
+      nombre: "Burgers del Born",
+      emoji: "🍔",
+      lat: 41.3859,
+      lng: 2.1803,
+      promo: "Refresco gratis",
+      categoria: "comida",
+      direccion: "El Born, Barcelona",
+      img: "https://images.pexels.com/photos/1639557/pexels-photo-1639557.jpeg",
+    },
+    {
+      id: "b5",
+      nombre: "Gelato Barceloneta",
+      emoji: "🍨",
+      lat: 41.3805,
+      lng: 2.1902,
+      promo: "2 bolas al precio de 1",
+      categoria: "comida",
+      direccion: "Passeig Joan de Borbó, Barcelona",
+      img: "https://images.pexels.com/photos/461430/pexels-photo-461430.jpeg",
+    },
+    {
+      id: "b6",
+      nombre: "Veggie Corner",
+      emoji: "🥗",
+      lat: 41.392,
+      lng: 2.1655,
+      promo: "Postre vegano gratis",
+      categoria: "comida",
+      direccion: "Carrer de València, Barcelona",
+      img: "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg",
+    },
+
+    // ---------- BARCELONA - FITNESS ----------
+    {
+      id: "b7",
+      nombre: "Fit Center BCN",
+      emoji: "🏋️",
+      lat: 41.3835,
+      lng: 2.1765,
+      promo: "1 día gratis",
+      categoria: "fitness",
+      direccion: "Rambla, Barcelona",
+      img: "https://images.pexels.com/photos/841130/pexels-photo-841130.jpeg",
+    },
+    {
+      id: "b8",
+      nombre: "CrossFit Eixample",
+      emoji: "🏋️‍♀️",
+      lat: 41.3928,
+      lng: 2.1733,
+      promo: "Primera clase gratis",
+      categoria: "fitness",
+      direccion: "Eixample, Barcelona",
+      img: "https://images.pexels.com/photos/2261485/pexels-photo-2261485.jpeg",
+    },
+    {
+      id: "b9",
+      nombre: "Yoga Urban Studio",
+      emoji: "🧘",
+      lat: 41.3896,
+      lng: 2.1822,
+      promo: "Clase de prueba sin coste",
+      categoria: "fitness",
+      direccion: "Ciutat Vella, Barcelona",
+      img: "https://images.pexels.com/photos/3822622/pexels-photo-3822622.jpeg",
+    },
+
+    // ---------- BARCELONA - COMPRAS ----------
+    {
+      id: "b10",
+      nombre: "Tech Store BCN",
+      emoji: "💻",
+      lat: 41.3879,
+      lng: 2.1703,
+      promo: "10% en accesorios",
+      categoria: "compras",
+      direccion: "Plaça Catalunya, Barcelona",
+      img: "https://images.pexels.com/photos/374679/pexels-photo-374679.jpeg",
+    },
+    {
+      id: "b11",
+      nombre: "Sneaker Shop Rambla",
+      emoji: "👟",
+      lat: 41.3844,
+      lng: 2.1731,
+      promo: "2ª unidad al 50%",
+      categoria: "compras",
+      direccion: "La Rambla, Barcelona",
+      img: "https://images.pexels.com/photos/2529148/pexels-photo-2529148.jpeg",
+    },
+    {
+      id: "b12",
+      nombre: "Book & Coffee",
+      emoji: "📚",
+      lat: 41.3907,
+      lng: 2.1669,
+      promo: "Café gratis con tu libro",
+      categoria: "compras",
+      direccion: "Carrer de Balmes, Barcelona",
+      img: "https://images.pexels.com/photos/1741230/pexels-photo-1741230.jpeg",
+    },
+
+    // ---------- OTROS (siguen existiendo, pero quedarán lejos en el radio) ----------
+    {
+      id: "p1",
       nombre: "Cafetería Paca",
       emoji: "☕",
       lat: 40.4168,
       lng: -3.7038,
-      promo: "Croissant gratis con tu café",
+      promo: "Croissant gratis",
       categoria: "comida",
-      direccion: "C/ Mayor 12, Madrid",
-      imagen:
-        "https://images.pexels.com/photos/374885/pexels-photo-374885.jpeg?w=800",
-      horario: "8:00 - 20:00",
+      direccion: "Madrid centro",
+      img: "https://images.pexels.com/photos/374885/pexels-photo-374885.jpeg",
     },
     {
-      id: "madrid-bella",
+      id: "p2",
       nombre: "Pizzería Bella",
       emoji: "🍕",
       lat: 40.4175,
       lng: -3.701,
-      promo: "2x1 en pizzas medianas",
+      promo: "2x1 pizzas",
       categoria: "comida",
-      direccion: "Plaza Italia 3, Madrid",
-      imagen:
-        "https://images.pexels.com/photos/2619967/pexels-photo-2619967.jpeg?w=800",
-      horario: "13:00 - 23:30",
-    },
-
-    // Barcelona
-    {
-      id: "bcn-gaudi",
-      nombre: "Café Gaudí",
-      emoji: "☕",
-      lat: 41.387,
-      lng: 2.1701,
-      promo: "2x1 en capuccinos",
-      categoria: "comida",
-      direccion: "Passeig de Gràcia 22, Barcelona",
-      imagen:
-        "https://images.pexels.com/photos/3020918/pexels-photo-3020918.jpeg?w=800",
-      horario: "9:00 - 19:00",
+      direccion: "Plaza Italia, Madrid",
+      img: "https://images.pexels.com/photos/2619967/pexels-photo-2619967.jpeg",
     },
     {
-      id: "bcn-fitness",
-      nombre: "Fit Center BCN",
-      emoji: "🏋️",
-      lat: 41.380,
-      lng: 2.180,
-      promo: "1 día gratuito",
-      categoria: "fitness",
-      direccion: "Rambla 55, Barcelona",
-      imagen:
-        "https://images.pexels.com/photos/841130/pexels-photo-841130.jpeg?w=800",
-      horario: "6:30 - 23:00",
-    },
-
-    // Valencia
-    {
-      id: "vlc-horchateria",
+      id: "p4",
       nombre: "Horchatería María",
       emoji: "🥤",
       lat: 39.4702,
       lng: -0.3768,
-      promo: "Horchata GRATIS en tu compra",
+      promo: "Horchata gratis",
       categoria: "comida",
-      direccion: "C/ San Vicente 44, Valencia",
-      imagen:
-        "https://images.pexels.com/photos/594697/pexels-photo-594697.jpeg?w=800",
-      horario: "10:00 - 22:00",
-    },
-    {
-      id: "vlc-sneakers",
-      nombre: "Valencia Sneakers",
-      emoji: "👟",
-      lat: 39.472,
-      lng: -0.378,
-      promo: "-15% en zapatillas",
-      categoria: "compras",
-      direccion: "Colón 19, Valencia",
-      imagen:
-        "https://images.pexels.com/photos/2529148/pexels-photo-2529148.jpeg?w=800",
-      horario: "10:00 - 21:00",
-    },
-
-    // Sevilla
-    {
-      id: "svq-tapas",
-      nombre: "Tapas Flamenco",
-      emoji: "🍢",
-      lat: 37.389,
-      lng: -5.984,
-      promo: "Tapa especial GRATIS",
-      categoria: "comida",
-      direccion: "C/ Sierpes 88, Sevilla",
-      imagen:
-        "https://images.pexels.com/photos/461198/pexels-photo-461198.jpeg?w=800",
-      horario: "12:00 - 00:00",
-    },
-
-    // Zaragoza
-    {
-      id: "zgz-burger",
-      nombre: "BunBurger Zaragoza",
-      emoji: "🍔",
-      lat: 41.6528,
-      lng: -0.8816,
-      promo: "Bebida XL gratis",
-      categoria: "comida",
-      direccion: "Coso 17, Zaragoza",
-      imagen:
-        "https://images.pexels.com/photos/1639563/pexels-photo-1639563.jpeg?w=800",
-      horario: "13:00 - 23:30",
-    },
-
-    // A Coruña
-    {
-      id: "crn-mariscos",
-      nombre: "Mariscos Royal",
-      emoji: "🦐",
-      lat: 43.3623,
-      lng: -8.4115,
-      promo: "Pulpo a mitad de precio",
-      categoria: "comida",
-      direccion: "Plaza Lugo 10, A Coruña",
-      imagen:
-        "https://images.pexels.com/photos/1401413/pexels-photo-1401413.jpeg?w=800",
-      horario: "13:00 - 23:00",
-    },
-
-    // Santander
-    {
-      id: "sndt-surf",
-      nombre: "Santander Surf Rental",
-      emoji: "🏄‍♂️",
-      lat: 43.476,
-      lng: -3.792,
-      promo: "1h tabla GRATIS",
-      categoria: "fitness",
-      direccion: "Playa El Sardinero",
-      imagen:
-        "https://images.pexels.com/photos/1768781/pexels-photo-1768781.jpeg?w=800",
-      horario: "10:00 - 19:00",
+      direccion: "Valencia",
+      img: "https://images.pexels.com/photos/594697/pexels-photo-594697.jpeg",
     },
   ];
 
-  // ====================== GEOLOCALIZACIÓN ======================
+  // ------- GEO -------
   useEffect(() => {
-    if (!navigator.geolocation) return;
+    if (!navigator.geolocation) {
+      setGeoError(true);
+      return;
+    }
+
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setUserCoords([pos.coords.latitude, pos.coords.longitude]);
-      },
-      () => console.warn("Ubicación denegada")
+      (pos) => setUser([pos.coords.latitude, pos.coords.longitude]),
+      () => setGeoError(true)
     );
   }, []);
 
-  const localesConDistancia = useMemo(() => {
-    if (!userCoords) return locales;
-    return locales.map((l) => ({
-      ...l,
-      distancia: haversineDistance(userCoords[0], userCoords[1], l.lat, l.lng),
-    }));
-  }, [userCoords]);
+  // Si falla la localización → usar centro de Barcelona (fallback)
+  const finalUser = user || [41.3874, 2.1686];
 
-  // ====================== FILTROS ======================
-  const filtrados = localesConDistancia
-    .filter((l) =>
-      category === "all" ? true : l.categoria === category
-    )
+  const withDist = useMemo(
+    () =>
+      locales.map((l) => ({
+        ...l,
+        dist: haversineDistance(finalUser[0], finalUser[1], l.lat, l.lng),
+      })),
+    [finalUser, locales]
+  );
+
+  // ------- FILTROS -------
+  const filtered = withDist
+    .filter((l) => (category === "all" ? true : l.categoria === category))
     .filter((l) =>
       search.trim()
-        ? (l.nombre + l.promo + l.direccion)
+        ? (l.nombre + l.direccion + l.promo)
             .toLowerCase()
             .includes(search.toLowerCase())
         : true
     )
-    .sort((a, b) => (a.distancia || 0) - (b.distancia || 0));
+    .filter((l) => {
+      if (radius === "all") return true;
+      return l.dist <= Number(radius);
+    });
 
-  const selectedLocal =
-    filtrados.find((l) => l.id === selectedId) || filtrados[0];
+  const center = selected ? [selected.lat, selected.lng] : finalUser;
 
-  const formatDistance = (d) =>
-    !d ? "" : d < 1000 ? `${Math.round(d)} m` : `${(d / 1000).toFixed(1)} km`;
+  const radiusOptions = [
+    { v: "all", t: "∞" },
+    { v: "500", t: "500m" },
+    { v: "1000", t: "1km" },
+    { v: "2000", t: "2km" },
+  ];
 
-  const handleOpenGame = (id) => navigate(`/game?commerce=${id}`);
-
-  const handleOpenMaps = (lat, lng) =>
-    window.open(
-      `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`,
-      "_blank"
-    );
-
-  // ====================== RENDER ======================
-
+  // ======================= UI ==========================
   return (
-    <div
-      className="min-h-screen flex flex-col px-4 py-6 relative"
-      style={{ backgroundColor: "#020617", color: "white" }}
-    >
-      <BackArrow to="/home" />
+    <div className="w-full h-screen relative bg-[#020617] overflow-hidden text-white">
+      {/* MAPA */}
+      <div className="absolute inset-0 z-0">
+        <MapContainer
+          center={center}
+          zoom={13}
+          scrollWheelZoom
+          style={{ height: "100%", width: "100%" }}
+        >
+          <Fly coords={center} />
 
-      {/* Fondo premium */}
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_0%_0%,rgba(34,197,94,0.2),transparent_50%),radial-gradient(circle_at_100%_100%,rgba(59,130,246,0.18),transparent_50%)]" />
+          <TileLayer
+            url="https://api.maptiler.com/maps/streets-v2-dark/{z}/{x}/{y}.png?key=Jigmtnsk39T7RV0uzSvT"
+          />
 
-      {/* Header */}
-      <h1 className="text-2xl font-extrabold mb-2 bg-gradient-to-r from-emerald-300 via-lime-300 to-cyan-300 bg-clip-text text-transparent">
-        Explora locales Vibbe
-      </h1>
+          <Marker icon={userIcon} position={finalUser}>
+            <Popup>
+              Estás aquí {geoError ? "(ubicación aproximada en Barcelona)" : ""}
+            </Popup>
+          </Marker>
 
-      <p className="text-sm text-slate-300 mb-4">
-        Descubre promociones cerca de ti 💚
-      </p>
+          {radius !== "all" && (
+            <Circle
+              center={finalUser}
+              radius={Number(radius)}
+              pathOptions={{
+                color: "#00eaff",
+                opacity: 0.5,
+                weight: 2,
+                fillColor: "#00eaff",
+                fillOpacity: 0.1,
+              }}
+            />
+          )}
 
-      {/* BUSCADOR Y FILTROS */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-4">
-        <input
-          type="text"
-          placeholder="🔍 Buscar locales..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 px-3 py-2 rounded-xl bg-slate-900/70 border border-slate-700 text-slate-100 placeholder:text-slate-500 focus:ring-2 focus:ring-emerald-400"
-        />
+          {filtered.map((loc) => (
+            <Marker
+              key={loc.id}
+              icon={vibbeIcon}
+              position={[loc.lat, loc.lng]}
+              eventHandlers={{ click: () => setSelected(loc) }}
+            >
+              <Popup>{loc.nombre}</Popup>
+            </Marker>
+          ))}
+        </MapContainer>
 
-        <div className="flex gap-2 text-xs">
-          {[
-            { id: "all", label: "Todos" },
-            { id: "comida", label: "Comida" },
-            { id: "fitness", label: "Fitness" },
-            { id: "compras", label: "Compras" },
-          ].map((c) => (
+        {/* AURA */}
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,234,255,0.08),transparent_60%)]" />
+      </div>
+
+      {/* BARRA SUPERIOR – layout arreglado para que no se corte a la derecha */}
+      <div className="absolute top-3 left-0 right-0 z-20 px-4">
+        <div className="flex items-center gap-3 max-w-5xl mx-auto">
+          <BackArrow to="/home" />
+          <div className="flex-1 backdrop-blur-xl bg-white/5 border border-cyan-400/30 px-4 py-2 rounded-2xl shadow-[0_0_20px_#00eaff55] flex items-center gap-3">
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar..."
+              className="bg-transparent text-sm outline-none w-full"
+            />
+            🔍
+          </div>
+        </div>
+      </div>
+
+      {/* PANEL INFERIOR */}
+      <motion.div
+        initial={{ y: 90, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="absolute bottom-0 left-0 right-0 z-20 p-4"
+      >
+        {/* FILTRO CATEGORÍAS */}
+        <div className="flex gap-2 mb-3 overflow-x-auto pb-1">
+          {["all", "comida", "fitness", "compras"].map((c) => (
             <button
-              key={c.id}
-              onClick={() => setCategory(c.id)}
-              className={`px-3 py-1 rounded-full border transition ${
-                category === c.id
-                  ? "bg-emerald-400 text-slate-900 border-emerald-300"
-                  : "bg-slate-900/70 text-slate-200 border-slate-700 hover:border-emerald-400/60"
+              key={c}
+              onClick={() => setCategory(c)}
+              className={`px-4 py-1 rounded-full border backdrop-blur-xl whitespace-nowrap text-sm
+              ${
+                category === c
+                  ? "border-cyan-400 bg-cyan-400 text-black shadow-[0_0_15px_#00eaff99]"
+                  : "border-cyan-400/40 bg-white/5"
               }`}
             >
-              {c.label}
+              {c === "all" ? "Todo" : c}
             </button>
           ))}
         </div>
-      </div>
 
-      {/* LAYOUT */}
-      <div className="flex flex-col lg:flex-row gap-5">
-        {/* LISTA */}
-        <div className="max-h-[75vh] overflow-y-auto pr-1 lg:w-[40%] flex flex-col gap-3">
-          {filtrados.map((loc) => {
-            const selected = selectedLocal?.id === loc.id;
-            return (
-              <motion.div
-                key={loc.id}
-                onClick={() => setSelectedId(loc.id)}
-                whileHover={{ scale: 1.02 }}
-                className={`flex gap-3 rounded-2xl bg-slate-900/80 border overflow-hidden cursor-pointer transition ${
-                  selected
-                    ? "border-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.4)]"
-                    : "border-slate-700 hover:border-emerald-400/60"
-                }`}
-              >
-                <img
-                  src={loc.imagen}
-                  className="w-24 h-24 object-cover"
-                />
+        {/* FILTRO RADIO */}
+        <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
+          {radiusOptions.map((r) => (
+            <button
+              key={r.v}
+              onClick={() => setRadius(r.v)}
+              className={`px-3 py-1 rounded-full text-xs border backdrop-blur-xl
+              ${
+                radius === r.v
+                  ? "border-cyan-400 bg-cyan-400 text-black shadow-[0_0_12px_#00eaffaa]"
+                  : "border-cyan-400/40 bg-white/5 text-cyan-100"
+              }`}
+            >
+              {r.t}
+            </button>
+          ))}
+        </div>
 
-                <div className="flex-1 py-2">
-                  <p className="font-semibold text-sm flex items-center gap-1">
-                    {loc.emoji} {loc.nombre}
+        {/* CARRUSEL */}
+        <div className="flex gap-4 overflow-x-auto pb-4">
+          {filtered.map((loc) => (
+            <motion.div
+              key={loc.id}
+              whileHover={{ scale: 1.04 }}
+              onClick={() => setSelected(loc)}
+              className="min-w-[270px] bg-white/5 backdrop-blur-xl border border-cyan-400/40 rounded-3xl shadow-[0_0_30px_#00eaff66] overflow-hidden cursor-pointer"
+            >
+              <img
+                src={loc.img}
+                alt={loc.nombre}
+                className="h-36 w-full object-cover"
+              />
+
+              <div className="p-3">
+                <p className="text-lg font-semibold text-cyan-300 flex items-center gap-1">
+                  {loc.emoji} {loc.nombre}
+                </p>
+                <p className="text-xs text-cyan-100/80 mt-1">{loc.promo}</p>
+                <p className="text-xs text-cyan-100/60">{loc.direccion}</p>
+                {loc.dist && (
+                  <p className="text-xs text-cyan-300 mt-1">
+                    {formatDist(loc.dist)}
                   </p>
-                  <p className="text-xs text-emerald-300">{loc.promo}</p>
-                  <p className="text-xs text-slate-400">{loc.direccion}</p>
-                  {loc.distancia && (
-                    <p className="text-xs text-cyan-300 mt-1">
-                      {formatDistance(loc.distancia)}
-                    </p>
-                  )}
-                </div>
-              </motion.div>
-            );
-          })}
+                )}
+              </div>
+            </motion.div>
+          ))}
         </div>
-
-        {/* MAPA */}
-        <div className="rounded-3xl overflow-hidden border border-slate-700 shadow-[0_0_35px_rgba(15,23,42,0.9)] lg:w-[60%]">
-          <MapContainer
-            center={[40.4168, -3.7038]}
-            zoom={13}
-            style={{ height: "60vh", width: "100%" }}
-            scrollWheelZoom={true}
-          >
-            <TileLayer
-              url="https://api.maptiler.com/maps/streets-v4/{z}/{x}/{y}.png?key=Jigmtnsk39T7RV0uzSvT"
-              attribution="© MapTiler © OpenStreetMap"
-            />
-
-            {userCoords && <FlyToUser coords={userCoords} />}
-            {selectedLocal && (
-              <FlyTo coords={[selectedLocal.lat, selectedLocal.lng]} />
-            )}
-
-            {userCoords && (
-              <Marker position={userCoords} icon={userIcon}>
-                <Popup>Estás aquí 💚</Popup>
-              </Marker>
-            )}
-
-            {locales.map((loc) => (
-              <Marker
-                key={loc.id}
-                position={[loc.lat, loc.lng]}
-                icon={vibbeIcon}
-                eventHandlers={{ click: () => setSelectedId(loc.id) }}
-              >
-                <Popup>
-                  <div className="text-center">
-                    <p className="font-bold text-emerald-600">{loc.nombre}</p>
-                    <p className="text-xs text-gray-700">{loc.promo}</p>
-                    <button
-                      onClick={() => handleOpenGame(loc.id)}
-                      className="mt-2 px-3 py-1 rounded-lg bg-emerald-500 text-xs text-white"
-                    >
-                      Jugar batalla
-                    </button>
-                  </div>
-                </Popup>
-              </Marker>
-            ))}
-          </MapContainer>
-        </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

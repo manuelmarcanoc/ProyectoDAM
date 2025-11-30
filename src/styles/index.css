@@ -41,3 +41,23 @@ input:focus {
   border-color: #34d399; /* emerald-400 */
   box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.3);
 }
+
+/* === ANIMACIONES PERSONALIZADAS VIBBE === */
+
+@keyframes shine {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(200%); }
+}
+
+.animate-shine {
+  animation: shine 2.4s linear infinite;
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 18s linear infinite;
+}
