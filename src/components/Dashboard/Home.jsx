@@ -1,29 +1,20 @@
 import React, { useEffect, useState } from "react";
-import { motion, useMotionValue, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import logo from "../../assets/logo.png";
 import HomeBackground from "../backgrounds/HomeBackground";
+import { useAuth } from "../../context/AuthContext";
 
 export default function Home() {
   const navigate = useNavigate();
-  const [points, setPoints] = useState(0);
-  const totalPoints = 1250;
-  const nextLevelPercent = 25;
+  const { currentUser } = useAuth();
 
-  // Animación de conteo
-  useEffect(() => {
-    let current = 0;
-    const interval = setInterval(() => {
-      current += 25;
-      if (current >= totalPoints) {
-        setPoints(totalPoints);
-        clearInterval(interval);
-      } else {
-        setPoints(current);
-      }
-    }, 30);
-    return () => clearInterval(interval);
-  }, []);
+  // Datos reales del usuario
+  const points = currentUser?.points || 0;
+  const username = currentUser?.name || currentUser?.displayName || "Usuario";
+
+  const totalPoints = 1250;
+  const nextLevelPercent = Math.min(100, (points / totalPoints) * 100).toFixed(0);
 
   const opciones = [
     { icon: "💳", texto: "Generar QR", ruta: "/qr", color: "from-blue-400 to-cyan-300" },
@@ -35,10 +26,7 @@ export default function Home() {
   ];
 
   // Efecto Tilt para la tarjeta
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-  const rotateX = useTransform(y, [-100, 100], [10, -10]);
-  const rotateY = useTransform(x, [-100, 100], [-10, 10]);
+
 
   return (
     <motion.div
@@ -51,98 +39,90 @@ export default function Home() {
       {/* Header Compacto */}
       <div className="w-full max-w-md flex items-center justify-between mb-6 z-10 pt-2">
         <div className="flex items-center gap-3">
-            <motion.img 
-                src={logo} 
-                alt="Logo" 
-                className="w-12 h-12 drop-shadow-[0_0_15px_rgba(52,211,153,0.6)]"
-                initial={{ rotate: -180, scale: 0 }}
-                animate={{ rotate: 0, scale: 1 }}
-                transition={{ type: "spring", stiffness: 260, damping: 20 }}
-            />
-            <div className="flex flex-col">
-                <span className="text-xs text-emerald-200/80 uppercase tracking-wider">Bienvenido</span>
-                <span className="font-bold text-white text-lg leading-none">Usuario Demo</span>
-            </div>
+          <motion.img
+            src={logo}
+            alt="Logo"
+            className="w-12 h-12 drop-shadow-[0_0_15px_rgba(52,211,153,0.6)]"
+            initial={{ rotate: -180, scale: 0 }}
+            animate={{ rotate: 0, scale: 1 }}
+            transition={{ type: "spring", stiffness: 260, damping: 20 }}
+          />
+          <div className="flex flex-col">
+            <span className="text-xs text-emerald-200/80 uppercase tracking-wider">Bienvenido</span>
+            <span className="font-bold text-white text-lg leading-none">{username}</span>
+          </div>
         </div>
         <div className="w-10 h-10 rounded-full bg-slate-800/80 border border-emerald-500/30 flex items-center justify-center">
-            🔔
+          🔔
         </div>
       </div>
 
       {/* Tarjeta de Puntos Premium con Tilt 3D */}
       <div className="perspective-1000 w-full max-w-md z-10 mb-8">
         <motion.div
-            style={{ x, y, rotateX, rotateY, z: 100 }}
-            onMouseMove={(e) => {
-                const rect = e.currentTarget.getBoundingClientRect();
-                x.set(e.clientX - rect.left - rect.width / 2);
-                y.set(e.clientY - rect.top - rect.height / 2);
-            }}
-            onMouseLeave={() => { x.set(0); y.set(0); }}
-            className="relative w-full rounded-[2rem] bg-gradient-to-br from-slate-900/90 via-slate-800/90 to-emerald-950/90 
-            border border-white/10 shadow-[0_20px_50px_-12px_rgba(16,185,129,0.3)] backdrop-blur-xl overflow-hidden p-6 cursor-pointer group"
-            whileHover={{ scale: 1.02 }}
+          className="relative w-full rounded-[2rem] bg-gradient-to-br from-slate-900/90 via-slate-800/90 to-emerald-950/90 
+            border border-white/10 shadow-[0_20px_50px_-12px_rgba(16,185,129,0.3)] backdrop-blur-xl overflow-hidden p-6"
         >
-            {/* Brillo de fondo */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/20 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2" />
-            
-            <div className="relative flex justify-between items-center">
-                <div>
-                    <p className="text-emerald-100/60 text-sm font-medium mb-1">Saldo Disponible</p>
-                    <motion.h2 
-                        key={points}
-                        className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-emerald-100 to-white drop-shadow-[0_0_20px_rgba(52,211,153,0.4)]"
-                    >
-                        {points}
-                    </motion.h2>
-                    <div className="flex items-center gap-2 mt-3">
-                        <span className="px-2 py-1 rounded-md bg-emerald-500/20 border border-emerald-500/30 text-[10px] text-emerald-300 font-bold uppercase tracking-wide">
-                            Nivel Oro
-                        </span>
-                        <span className="text-xs text-slate-400">Prox: Diamante</span>
-                    </div>
-                </div>
+          {/* Brillo de fondo */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/20 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2" />
 
-                {/* Gráfico circular minimalista */}
-                <div className="relative w-24 h-24">
-                    <svg className="w-full h-full rotate-[-90deg]">
-                        <circle cx="50%" cy="50%" r="36" stroke="#1e293b" strokeWidth="8" fill="none" />
-                        <motion.circle
-                            cx="50%"
-                            cy="50%"
-                            r="36"
-                            stroke="url(#gradienteBarra)"
-                            strokeWidth="8"
-                            fill="none"
-                            strokeLinecap="round"
-                            initial={{ strokeDasharray: "0 250" }}
-                            animate={{ strokeDasharray: `${(250 * nextLevelPercent) / 100} 250` }}
-                            transition={{ duration: 1.5, ease: "easeOut" }}
-                            className="drop-shadow-[0_0_10px_rgba(16,185,129,0.5)]"
-                        />
-                         <defs>
-                            <linearGradient id="gradienteBarra" x1="0%" y1="0%" x2="100%" y2="0%">
-                                <stop offset="0%" stopColor="#34d399" />
-                                <stop offset="100%" stopColor="#bef264" />
-                            </linearGradient>
-                        </defs>
-                    </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <span className="text-sm font-bold text-white">{nextLevelPercent}%</span>
-                    </div>
-                </div>
+          <div className="relative flex justify-between items-center">
+            <div>
+              <p className="text-emerald-100/60 text-sm font-medium mb-1">Saldo Disponible</p>
+              <motion.h2
+                key={points}
+                className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-emerald-100 to-white drop-shadow-[0_0_20px_rgba(52,211,153,0.4)]"
+              >
+                {points}
+              </motion.h2>
+              <div className="flex items-center gap-2 mt-3">
+                <span className="px-2 py-1 rounded-md bg-emerald-500/20 border border-emerald-500/30 text-[10px] text-emerald-300 font-bold uppercase tracking-wide">
+                  Nivel Oro
+                </span>
+                <span className="text-xs text-slate-400">Prox: Diamante</span>
+              </div>
             </div>
+
+            {/* Gráfico circular minimalista */}
+            <div className="relative w-24 h-24">
+              <svg className="w-full h-full rotate-[-90deg]">
+                <circle cx="50%" cy="50%" r="36" stroke="#1e293b" strokeWidth="8" fill="none" />
+                <motion.circle
+                  cx="50%"
+                  cy="50%"
+                  r="36"
+                  stroke="url(#gradienteBarra)"
+                  strokeWidth="8"
+                  fill="none"
+                  strokeLinecap="round"
+                  initial={{ strokeDasharray: "0 250" }}
+                  animate={{ strokeDasharray: `${(250 * nextLevelPercent) / 100} 250` }}
+                  transition={{ duration: 1.5, ease: "easeOut" }}
+                  className="drop-shadow-[0_0_10px_rgba(16,185,129,0.5)]"
+                />
+                <defs>
+                  <linearGradient id="gradienteBarra" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#34d399" />
+                    <stop offset="100%" stopColor="#bef264" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-sm font-bold text-white">{nextLevelPercent}%</span>
+              </div>
+            </div>
+          </div>
         </motion.div>
       </div>
 
       {/* Grid de Menú */}
-      <motion.div 
+      <motion.div
         className="grid grid-cols-2 gap-4 w-full max-w-md z-10 pb-20"
         initial="hidden"
         animate="visible"
         variants={{
-            hidden: { opacity: 0 },
-            visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+          hidden: { opacity: 0 },
+          visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
         }}
       >
         {opciones.map((item, idx) => (
@@ -150,26 +130,26 @@ export default function Home() {
             key={idx}
             onClick={() => navigate(item.ruta)}
             variants={{
-                hidden: { y: 20, opacity: 0 },
-                visible: { y: 0, opacity: 1 }
+              hidden: { y: 20, opacity: 0 },
+              visible: { y: 0, opacity: 1 }
             }}
             whileHover={{ scale: 1.05, y: -5 }}
             whileTap={{ scale: 0.95 }}
             className="group relative flex flex-col items-start justify-between p-4 h-32 rounded-3xl bg-slate-900/40 border border-white/5 overflow-hidden hover:bg-slate-800/60 transition-colors"
           >
-             {/* Gradiente sutil al hacer hover */}
-             <div className={`absolute inset-0 bg-gradient-to-br ${item.color} opacity-0 group-hover:opacity-10 transition-opacity duration-500`} />
-             
-             <span className="text-3xl bg-slate-950/50 w-12 h-12 rounded-2xl flex items-center justify-center border border-white/5 shadow-inner">
-                 {item.icon}
-             </span>
-             
-             <div className="w-full flex justify-between items-end">
-                <span className="font-semibold text-slate-100 text-sm tracking-wide">{item.texto}</span>
-                <span className="text-emerald-400 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
-                    →
-                </span>
-             </div>
+            {/* Gradiente sutil al hacer hover */}
+            <div className={`absolute inset-0 bg-gradient-to-br ${item.color} opacity-0 group-hover:opacity-10 transition-opacity duration-500`} />
+
+            <span className="text-3xl bg-slate-950/50 w-12 h-12 rounded-2xl flex items-center justify-center border border-white/5 shadow-inner">
+              {item.icon}
+            </span>
+
+            <div className="w-full flex justify-between items-end">
+              <span className="font-semibold text-slate-100 text-sm tracking-wide">{item.texto}</span>
+              <span className="text-emerald-400 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
+                →
+              </span>
+            </div>
           </motion.button>
         ))}
       </motion.div>

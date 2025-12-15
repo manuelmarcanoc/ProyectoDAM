@@ -15,27 +15,37 @@ import Profile from "./components/Dashboard/Profile";
 import Qr from "./components/Dashboard/Qr";
 import Game from "./components/Dashboard/Game";
 
+import { AuthProvider, useAuth } from "./context/AuthContext";
+
+// Componente para proteger rutas
+function PrivateRoute({ children }) {
+  const { currentUser } = useAuth();
+  return currentUser ? children : <Navigate to="/login" replace />;
+}
+
 export default function App() {
   return (
-    <Router>
-      <Routes>
-        {/* Auth */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/qr" element={<Qr />} />
+    <AuthProvider>
+      <Router>
+        <Routes>
+          {/* Auth */}
+          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
-        {/* App */}
-        <Route path="/home" element={<Home />} />
-        <Route path="/points" element={<Points />} />
-        <Route path="/rewards" element={<Rewards />} />
-        <Route path="/locations" element={<Locations />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/game" element={<Game />} />
+          {/* App Protegida */}
+          <Route path="/qr" element={<PrivateRoute><Qr /></PrivateRoute>} />
+          <Route path="/home" element={<PrivateRoute><Home /></PrivateRoute>} />
+          <Route path="/points" element={<PrivateRoute><Points /></PrivateRoute>} />
+          <Route path="/rewards" element={<PrivateRoute><Rewards /></PrivateRoute>} />
+          <Route path="/locations" element={<PrivateRoute><Locations /></PrivateRoute>} />
+          <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+          <Route path="/game" element={<PrivateRoute><Game /></PrivateRoute>} />
 
-        {/* 404 simple (redirige al login) */}
-        <Route path="*" element={<Navigate to="/login" replace />} />
-      </Routes>
-    </Router>
+          {/* 404 simple (redirige al login) */}
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }

@@ -1,121 +1,119 @@
 import React, { useState } from "react";
-import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import AuthBackground from "./AuthBackground";
+import { useAuth } from "../../context/AuthContext";
+import AuthBackground from "../../AuthBackground";
 import logo from "../../assets/logo.png";
+import { motion } from "framer-motion";
 
 export default function Login() {
   const navigate = useNavigate();
+  const { loginWithGoogle, loginWithEmail } = useAuth();
+  const [error, setError] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    console.log("🔐 Login con:", { email, password });
-    navigate("/home");
+  const handleGoogleLogin = async () => {
+    try {
+      setError("");
+      await loginWithGoogle();
+      navigate("/home");
+    } catch (err) {
+      setError("Error al iniciar sesión con Google.");
+      console.error(err);
+    }
   };
 
-  // ⭐ LOGIN CON GOOGLE
-  const handleGoogleLogin = () => {
-    console.log("🔵 Login con Google…");
-    navigate("/home");
+  const handleEmailLogin = async (e) => {
+    e.preventDefault();
+    try {
+      setError("");
+      await loginWithEmail(email, password);
+      navigate("/home");
+    } catch (err) {
+      setError("Usuario o contraseña incorrectos.");
+      console.error(err);
+    }
   };
 
   return (
-    <div className="relative flex flex-col items-center justify-center min-h-screen overflow-hidden">
-      {/* 🌌 Fondo animado */}
+    <div className="min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden">
       <AuthBackground />
 
-      {/* Luces decorativas */}
-      <div className="absolute w-[400px] h-[400px] bg-emerald-400/20 blur-[150px] top-[25%] left-[15%] rounded-full animate-pulse" />
-      <div className="absolute w-[350px] h-[350px] bg-yellow-300/15 blur-[130px] bottom-[20%] right-[15%] rounded-full animate-pulse" />
-
-      {/* 🧾 Tarjeta principal */}
-      <motion.form
-        onSubmit={handleLogin}
-        className="relative z-10 bg-white/10 backdrop-blur-2xl border border-white/20 rounded-3xl p-8 w-[90%] max-w-sm shadow-2xl space-y-5"
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.6 }}
+      <motion.div
+        className="w-full max-w-sm bg-slate-900/60 backdrop-blur-xl border border-white/10 p-8 rounded-3xl shadow-2xl z-10"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
       >
-        {/* LOGO */}
-        <motion.img
-          src={logo}
-          alt="Vibbe Logo"
-          className="w-24 h-24 mx-auto mb-4 drop-shadow-2xl rounded-2xl"
-          initial={{ opacity: 0, y: -30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-        />
+        <div className="text-center mb-6">
+          <motion.img
+            src={logo}
+            className="w-20 h-20 mx-auto mb-4 drop-shadow-[0_0_15px_rgba(52,211,153,0.5)]"
+            alt="Logo"
+          />
+          <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-cyan-400 mb-2">
+            Vibbe
+          </h1>
+          <p className="text-slate-400 text-sm">Bienvenido de nuevo</p>
+        </div>
 
-        <h2 className="text-3xl font-extrabold text-center bg-gradient-to-r from-emerald-400 to-yellow-300 bg-clip-text text-transparent">
-          Bienvenido
-        </h2>
-        <p className="text-gray-300 text-sm text-center mb-2">
-          Accede a tu cuenta Vibbe
-        </p>
+        {error && <p className="text-red-400 text-sm text-center mb-4 bg-red-500/10 p-2 rounded">{error}</p>}
 
-        {/* Inputs */}
-        <div className="space-y-4">
+        <form onSubmit={handleEmailLogin} className="space-y-4 mb-6">
           <input
             type="email"
             placeholder="Correo electrónico"
+            className="w-full p-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-400 focus:border-emerald-500 focus:outline-none transition-colors"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full p-3 rounded-xl bg-white/10 text-white placeholder-gray-400 
-                       border border-white/20 focus:border-emerald-400 focus:ring-2 
-                       focus:ring-emerald-400/50 outline-none transition"
+            required
           />
           <input
             type="password"
             placeholder="Contraseña"
+            className="w-full p-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-400 focus:border-emerald-500 focus:outline-none transition-colors"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-3 rounded-xl bg-white/10 text-white placeholder-gray-400 
-                       border border-white/20 focus:border-emerald-400 focus:ring-2 
-                       focus:ring-emerald-400/50 outline-none transition"
+            required
           />
+          <button
+            type="submit"
+            className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-white font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/20"
+          >
+            Iniciar Sesión
+          </button>
+        </form>
+
+        <div className="relative mb-6">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-white/10"></div>
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-slate-900 px-2 text-slate-500">O continúa con</span>
+          </div>
         </div>
 
-        {/* Botón de acceso */}
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.97 }}
-          type="submit"
-          className="w-full py-3 rounded-xl font-semibold text-gray-900 bg-gradient-to-r 
-                     from-emerald-400 via-lime-300 to-yellow-300 hover:opacity-90 transition"
-        >
-          Iniciar sesión
-        </motion.button>
-
-        {/* ⭐ INICIO DE SESIÓN CON GOOGLE */}
-        <motion.button
+        <button
           onClick={handleGoogleLogin}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="w-full py-3 flex items-center justify-center gap-3 rounded-xl 
-                     bg-white text-gray-700 font-semibold shadow-md mt-3 hover:bg-gray-50 transition"
+          className="w-full py-3 px-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold rounded-xl flex items-center justify-center gap-3 transition-all"
         >
-          {/* ICONO GOOGLE */}
           <img
             src="https://www.svgrepo.com/show/475656/google-color.svg"
-            className="w-6 h-6"
-            alt="Google logo"
+            alt="Google"
+            className="w-5 h-5"
           />
-          Iniciar sesión con Google
-        </motion.button>
+          Google
+        </button>
 
-        {/* Enlace a registro */}
-        <p className="text-center text-gray-400 text-sm mt-4">
-          ¿No tienes cuenta?{" "}
+        <p className="mt-8 text-center text-sm text-slate-400">
+          ¿No tienes cuenta? {" "}
           <span
-            className="text-emerald-400 cursor-pointer hover:underline"
+            className="text-emerald-400 font-bold cursor-pointer hover:underline"
             onClick={() => navigate("/register")}
           >
-            Regístrate aquí
+            Regístrate
           </span>
         </p>
-      </motion.form>
+      </motion.div>
     </div>
   );
 }
